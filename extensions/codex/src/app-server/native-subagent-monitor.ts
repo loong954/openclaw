@@ -1258,7 +1258,10 @@ class Monitor {
       ) {
         continue;
       }
-      const childThreadId = task.runId!.slice(CODEX_NATIVE_SUBAGENT_RUN_ID_PREFIX.length).trim();
+      if (!task.runId) {
+        continue;
+      }
+      const childThreadId = task.runId.slice(CODEX_NATIVE_SUBAGENT_RUN_ID_PREFIX.length).trim();
       candidates.set(childThreadId, {
         requesterSessionKey: state.requesterSessionKey,
         childThreadId,

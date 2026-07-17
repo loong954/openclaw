@@ -357,10 +357,17 @@ function resolveGoogleAuthDispatcherPolicy(
   dispatcherPolicy?: PinnedDispatcherPolicy;
   init?: RequestInit;
 } {
-  const requestUrl =
-    input instanceof Request
-      ? new URL(input.url)
-      : new URL(typeof input === "string" ? input : input.toString());
+  let requestUrl: URL;
+  try {
+    requestUrl =
+      input instanceof Request
+        ? new URL(input.url)
+        : new URL(typeof input === "string" ? input : input.toString());
+  } catch {
+    throw new Error(
+      `Invalid Google Chat request URL: ${typeof input === "string" ? input : input instanceof Request ? input.url : String(input)}`,
+    );
+  }
   const nextInit = sanitizeGoogleAuthInit(init);
   const googleAuthInit = (init ?? {}) as GoogleAuthTransportInit;
   const tlsOptions = resolveGoogleAuthTlsOptions(googleAuthInit, requestUrl);

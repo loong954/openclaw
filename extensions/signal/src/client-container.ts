@@ -784,9 +784,9 @@ export async function containerRpcRequest<T = unknown>(
       const quoteAuthor = normalizeContainerQuoteText(p.quoteAuthor ?? p["quote-author"]);
       const result = await containerSendMessage({
         baseUrl: opts.baseUrl,
-        account: (p.account as string) ?? "",
+        account: typeof p.account === "string" ? p.account : "",
         recipients: finalRecipients,
-        message: (p.message as string) ?? "",
+        message: typeof p.message === "string" ? p.message : "",
         textStyles,
         attachments: p.attachments as string[] | undefined,
         maxAttachmentBytes: opts.maxAttachmentBytes,

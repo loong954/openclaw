@@ -465,6 +465,21 @@ describe("performMatrixRequest", () => {
     expect(result.text).toBe(payload);
     expect(result.buffer.toString("utf8")).toBe(payload);
   });
+
+  it("rejects malformed homeserver URL with invalid URL error", async () => {
+    stubRuntimeFetch(vi.fn());
+
+    await expect(
+      performMatrixRequest({
+        homeserver: "not_a_valid_url",
+        accessToken: "token",
+        method: "GET",
+        endpoint: "/_matrix/client/v3/account/whoami",
+        timeoutMs: 5000,
+        ssrfPolicy: { allowPrivateNetwork: true },
+      }),
+    ).rejects.toThrow("Invalid URL");
+  });
 });
 
 describe("createMatrixGuardedFetch", () => {
@@ -525,6 +540,14 @@ describe("createMatrixGuardedFetch", () => {
     expect(runtimeFetch.mock.calls.at(0)?.[0]).toBe(
       "http://127.0.0.1:8008/_matrix/client/v3/sync?filter=abc&timeout=30000",
     );
+  });
+
+  it("rejects malformed URL with descriptive error containing the URL value", async () => {
+    const guardedFetch = createMatrixGuardedFetch({
+      ssrfPolicy: { allowPrivateNetwork: true },
+    });
+
+    await expect(guardedFetch("not a valid url ::: /////")).rejects.toThrow(/Invalid.*URL/);
   });
 
   it("leaves non-sync Matrix requests unchanged", async () => {

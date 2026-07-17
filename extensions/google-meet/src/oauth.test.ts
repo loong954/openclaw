@@ -244,4 +244,23 @@ describe("Google Meet OAuth", () => {
     ).rejects.toThrow(/timeout/i);
     expect(promptInput).not.toHaveBeenCalled();
   });
+
+  it("throws when refresh credentials are missing and no valid cached token exists", async () => {
+    // No accessToken and no refreshToken: should throw with credential error.
+    await expect(
+      resolveGoogleMeetAccessToken({
+        clientId: "client-id",
+      }),
+    ).rejects.toThrow("Missing Google Meet OAuth credentials");
+  });
+
+  it("throws when refresh credentials are missing with whitespace-only accessToken", async () => {
+    // Whitespace-only accessToken should not be treated as a valid cached token.
+    await expect(
+      resolveGoogleMeetAccessToken({
+        clientId: "client-id",
+        accessToken: "   ",
+      }),
+    ).rejects.toThrow("Missing Google Meet OAuth credentials");
+  });
 });

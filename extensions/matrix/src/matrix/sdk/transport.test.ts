@@ -465,6 +465,35 @@ describe("performMatrixRequest", () => {
     expect(result.text).toBe(payload);
     expect(result.buffer.toString("utf8")).toBe(payload);
   });
+
+  it("rejects malformed endpoint URL with descriptive error", async () => {
+    stubRuntimeFetch(vi.fn());
+    await expect(
+      performMatrixRequest({
+        homeserver: "http://127.0.0.1:8008",
+        accessToken: "token",
+        method: "GET",
+        endpoint: "http://%zz/",
+        timeoutMs: 5000,
+        allowAbsoluteEndpoint: true,
+        ssrfPolicy: { allowPrivateNetwork: true },
+      }),
+    ).rejects.toThrow(/Invalid.*URL/);
+  });
+
+  it("rejects malformed homeserver URL with descriptive error", async () => {
+    stubRuntimeFetch(vi.fn());
+    await expect(
+      performMatrixRequest({
+        homeserver: "not_a_valid_url",
+        accessToken: "token",
+        method: "GET",
+        endpoint: "/_matrix/client/v3/account/whoami",
+        timeoutMs: 5000,
+        ssrfPolicy: { allowPrivateNetwork: true },
+      }),
+    ).rejects.toThrow(/Invalid.*URL/);
+  });
 });
 
 describe("createMatrixGuardedFetch", () => {

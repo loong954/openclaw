@@ -94,6 +94,59 @@ describe("engine/tools/remind-logic", () => {
       });
     });
 
+    it("runs cron.add with valid cron expression", async () => {
+      const calls: RemindCronAction[] = [];
+      const result = await executeScheduledRemind(
+        {
+          action: "add",
+          content: "daily report",
+          to: "qqbot:c2c:123",
+          time: "0 9 * * *",
+          timezone: "Asia/Shanghai",
+        },
+        {},
+        async (params) => {
+          calls.push(params);
+          return { id: "cron-1" };
+        },
+      );
+
+      expect(calls).toHaveLength(1);
+      const call = calls[0];
+      expect(call?.action).toBe("add");
+      if (call?.action !== "add") {
+        throw new Error("expected add cron action");
+      }
+      expect(call.job.schedule).toEqual({
+        kind: "cron",
+        expr: "0 9 * * *",
+        tz: "Asia/Shanghai",
+      });
+      expect(call.job.name).toBe("Reminder: daily report");
+      expect(call.job.payload).toEqual({
+        kind: "agentTurn",
+        message: expect.stringContaining("daily report"),
+      });
+      expect(result.details).toEqual({
+        ok: true,
+        action: "add",
+        summary: expect.stringContaining('"daily report"'),
+        cronResult: { id: "cron-1" },
+      });
+    });
+
+    it("returns error when content is missing for cron reminders", async () => {
+      const result = await executeScheduledRemind(
+        { action: "add", time: "0 * * * *" },
+        {},
+        async () => {
+          throw new Error("unexpected scheduler call");
+        },
+      );
+
+      expect((result.details as { error: string }).error).toContain("content");
+    });
+
     it("rejects relative reminders whose scheduled time exceeds the Date range", async () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(8_640_000_000_000_000));

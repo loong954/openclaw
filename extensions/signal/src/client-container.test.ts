@@ -1080,6 +1080,90 @@ describe("containerRpcRequest send", () => {
     expect(body).not.toHaveProperty("quote_author");
     expect(body).not.toHaveProperty("quote_message");
   });
+
+  it("falls back to empty string when account is a non-string value", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      ...bodyStream(JSON.stringify({ timestamp: "1700000000000" })),
+    });
+
+    await containerRpcRequest(
+      "send",
+      {
+        account: 12345,
+        recipient: ["+15550001111"],
+        message: "Hello world",
+      },
+      { baseUrl: "http://localhost:8080" },
+    );
+
+    const body = parseFetchBody();
+    expect(body.number).toBe("");
+  });
+
+  it("falls back to empty string when message is a non-string value", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      ...bodyStream(JSON.stringify({ timestamp: "1700000000000" })),
+    });
+
+    await containerRpcRequest(
+      "send",
+      {
+        account: "+14259798283",
+        recipient: ["+15550001111"],
+        message: { text: "not a string" },
+      },
+      { baseUrl: "http://localhost:8080" },
+    );
+
+    const body = parseFetchBody();
+    expect(body.message).toBe("");
+  });
+
+  it("falls back to empty string when account is null", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      ...bodyStream(JSON.stringify({ timestamp: "1700000000000" })),
+    });
+
+    await containerRpcRequest(
+      "send",
+      {
+        account: null,
+        recipient: ["+15550001111"],
+        message: "Hello world",
+      },
+      { baseUrl: "http://localhost:8080" },
+    );
+
+    const body = parseFetchBody();
+    expect(body.number).toBe("");
+  });
+
+  it("falls back to empty string when message is undefined", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      ...bodyStream(JSON.stringify({ timestamp: "1700000000000" })),
+    });
+
+    await containerRpcRequest(
+      "send",
+      {
+        account: "+14259798283",
+        recipient: ["+15550001111"],
+        // message intentionally omitted
+      },
+      { baseUrl: "http://localhost:8080" },
+    );
+
+    const body = parseFetchBody();
+    expect(body.message).toBe("");
+  });
 });
 
 describe("containerSendReceipt", () => {

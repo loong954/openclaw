@@ -348,6 +348,23 @@ describe("googlechat google auth runtime", () => {
     expect(release).toHaveBeenCalledOnce();
   });
 
+  it("rejects malformed URL with descriptive error containing the URL value", async () => {
+    const release = vi.fn();
+    mocks.fetchWithSsrFGuard.mockResolvedValueOnce({
+      response: new Response("ok", { status: 200 }),
+      release,
+    });
+
+    const guardedFetch = await createGoogleAuthTransportFetch();
+
+    await expect(
+      guardedFetch("http://%zz/", {
+        method: "GET",
+      } as RequestInit),
+    ).rejects.toThrow(/Invalid.*URL/);
+    expect(release).not.toHaveBeenCalled();
+  });
+
   it("rejects malformed auth content-length before reading the body", async () => {
     const release = vi.fn();
     const arrayBuffer = vi.fn(async () => new ArrayBuffer(16));

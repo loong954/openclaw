@@ -326,9 +326,16 @@ export async function performMatrixRequest(params: {
     );
   }
 
-  const baseUrl = isAbsoluteEndpoint
-    ? new URL(params.endpoint)
-    : new URL(normalizeEndpoint(params.endpoint), params.homeserver);
+  let baseUrl: URL;
+  try {
+    baseUrl = isAbsoluteEndpoint
+      ? new URL(params.endpoint)
+      : new URL(normalizeEndpoint(params.endpoint), params.homeserver);
+  } catch {
+    throw new Error(
+      `Invalid Matrix request URL: endpoint=${params.endpoint}, homeserver=${params.homeserver}`,
+    );
+  }
   applyQuery(baseUrl, params.qs);
 
   const headers = new Headers();

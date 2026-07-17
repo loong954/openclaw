@@ -19,7 +19,11 @@ function headersForOpenRouterGet(url: string, baseUrl: string, requestHeaders: H
 }
 
 export function resolveOpenRouterVideoUrl(url: string, baseUrl: string): string {
-  return new URL(url, `${baseUrl}/`).href;
+  try {
+    return new URL(url, `${baseUrl}/`).href;
+  } catch {
+    throw new Error(`Invalid OpenRouter video URL: ${url} (base: ${baseUrl})`);
+  }
 }
 
 export async function fetchOpenRouterVideoGet(params: {

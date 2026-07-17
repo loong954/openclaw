@@ -164,7 +164,12 @@ async function fetchWithMatrixGuardedRedirects(params: {
   ssrfPolicy?: SsrFPolicy;
   dispatcherPolicy?: PinnedDispatcherPolicy;
 }): Promise<{ response: Response; release: () => Promise<void>; finalUrl: string }> {
-  let currentUrl = new URL(params.url);
+  let currentUrl: URL;
+  try {
+    currentUrl = new URL(params.url);
+  } catch {
+    throw new Error(`Invalid Matrix request URL: ${params.url}`);
+  }
   let method = (params.init?.method ?? "GET").toUpperCase();
   let body = params.init?.body;
   let headers = new Headers(params.init?.headers ?? {});
